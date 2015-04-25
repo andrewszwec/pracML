@@ -1,0 +1,121 @@
+============================================
+-- Videos Week 3
+============================================
+
+--------------------------------------------
+-- Video 1 - (Predicting with trees)
+--------------------------------------------
+trees
+Pros: easier to interpret, better performance in non-linear settings
+
+Cons: Without pruning/cross validation can lead to over fitting, harder to estimate uncertainty, results may be variable
+
+Measures of Impurity:
+Pmk = 1/N sum_for_leaf_m(count number of class = k)
+
+Miss classification error = 1-Pmk 
+k(m) 
+
+Gini index
+
+Root means square error
+
+Examples using iris data
+
+MEthod for Regression and classification trees = "rpart"
+
+plot(modFit$finalModel)
+text(modeFit$finalModel, use.n=TRUE, all=True)
+
+
+library(rattle)
+fancyRpartPlot(modFit$finalModel)
+
+predict(modFit, newdata=testing)
+
+--------------------------------------------
+-- Video 2 - (Bagging)
+--------------------------------------------
+
+Bagging = bootstrap aggregating
+
+using TRAIN
+bagEarth
+treebag
+bagFDA
+
+
+--------------------------------------------
+-- Video 3 - (Random Forests)
+--------------------------------------------
+
+random forests 
+pros: accuracy
+
+Cons
+Speed
+interpretiblily
+offitting
+
+method = "rf", prox=TRUE
+
+mtry = number of tries
+
+classCenter(training, trainting$species, modFit$finalModel$prox)
+
+rf and boosting very popular in kaggle
+
+--------------------------------------------
+-- Video 4 - (Boosting)
+--------------------------------------------
+Boosting
+take weak predicts, weight them and add them up
+
+Adaboost - most famous
+
+gbm - boosting with trees
+mboost model based boosting
+ada statistical boosting using additice regression
+gamBoost using generialized addative models
+
+use boosting plus random forests for maxiumum prediction accuracy
+
+--------------------------------------------
+-- Video 5 - (Model Based Prediction)
+--------------------------------------------
+Linear discriminant analysis
+Quadratic discriminant analysis
+model based predictions
+naive bayes
+
+method = lda
+method = nb
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

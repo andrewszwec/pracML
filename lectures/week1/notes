@@ -1,0 +1,126 @@
+============================================
+Practical Machine Learning
+============================================
+
+
+--------------------------------------------
+-- Video 1: Motivation and Prerequisites 
+--------------------------------------------
+
+
+
+--------------------------------------------
+-- Video 3: Relative order of importance 
+--------------------------------------------
+
+
+--------------------------------------------
+-- Video 4: In sample vs out of sample error
+--------------------------------------------
+
+in sample error = training error
+out of sample error = cross validation error = generalisation error
+
+
+
+spam detector attributes:
+- - - - - - - - - - - - - -
+ratio of spaces to total characters
+ratio of capitals to total characters
+total number of characters
+Includes_pictures
+
+--------------------------------------------
+-- Video 5: Prediction study design
+--------------------------------------------
+
+--------------------------------------------
+-- Video 6: Types of errors
+--------------------------------------------
+Look for Screenshot 8:40 13/04/2015 (types of errors)
+
+Root mean squared error MSE:
+screen shoot 8:47 13/04/2015
+
+sensitivity = recall
+
+--------------------------------------------
+-- Video 7: Receiver operating characteristics (ROC)
+--------------------------------------------
+ROC curves
+Different cutoffs 
+
+ROC curve axis:
+- - - - - - - - -
+x-axis = False positive rate (or 1-specificity)
+y-axis = true positive rate
+
+the greater the area under the ROC curve the better the learning algorithm. Also called AUC - area under curve
+
+if AUC = 0.5 = random guessing
+AUC = 1 = perfect classifier
+
+AUC > 0.8 is good = KI i think??
+
+
+
+--------------------------------------------
+-- Video 8: Cross validation
+--------------------------------------------
+accuracy on training set is optimistic = resubstitution accuracy
+
+test set accuracy :
+
+Subsplit training set into trainin and test. 
+use K-Folds for instance
+
+You can random sample with replacement = bootstrapping -> underestimates error rate. You can correct with 0.632
+
+
+
+
+--------------------------------------------
+-- Video 9: What data should we use
+--------------------------------------------
+
+sensitivity = 0.99
+specificty = 0.99
+clicked = 1/1000 visits
+
+
+			Actual
+			1		0
+		1	990		10
+test 	0	10		990
+
+TP = 990
+FP = 10
+
+ppv = 990 / (1000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
