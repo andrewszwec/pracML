@@ -1,0 +1,239 @@
+---
+title: "Practical Machine Learning Assignment"
+author: "Andrew Szwec"
+date: "Tuesday, April 21, 2015"
+output: html_document
+---
+
+This is a the Coursera Practical Machine Learning Assignment.
+
+## Load Data 
+```{r}
+# set working directory
+setwd("~/Documents/Coursera/dataScienceSpecialisation/pracML/assignment")
+
+# Load Data
+file1 <- '/Users/andrewszwec/Documents/Coursera/dataScienceSpecialisation/pracML/assignment/pml-training.csv'
+file2 <- '/Users/andrewszwec/Documents/Coursera/dataScienceSpecialisation/pracML/assignment/pml-testing.csv'
+
+raw_train <- data.frame(read.csv(file1, header=TRUE))
+raw_test <- data.frame(read.csv(file2, header=TRUE))
+
+
+```
+
+## Data Exploration
+
+```{r, echo=FALSE}
+
+
+library(plyr)
+counts <- count(raw_train, var='classe')
+# Look at what exercise each participant carried out? They all carried out each exercise
+count(raw_train, vars=c('user_name','classe') )
+
+require(ggplot2)
+qplot(counts$classe, counts$freq, geom='bar', stat="identity", main='Number of Samples per Test', xlab ='Test Case', ylab='Count', fill=counts$classe)
+
+qplot(raw_train$pitch_belt, raw_train$roll_belt, geom='point', colour=raw_train$classe )
+
+qplot(raw_timestamp_part_1, gyros_arm_x, geom='point', facets=.~classe , data=raw_train, colour=raw_train$classe )
+
+
+```
+
+
+
+```{r}
+# Take raw train and remove first seven attr
+require(caret)
+
+names(raw_train)
+
+### Use VarImp() choose the variables of most importance
+
+df <- subset(raw_train , select=c(roll_belt, pitch_belt, yaw_belt, total_accel_belt, kurtosis_roll_belt, kurtosis_picth_belt, kurtosis_yaw_belt, skewness_roll_belt, skewness_roll_belt.1, skewness_yaw_belt, max_roll_belt, max_picth_belt, max_yaw_belt, min_roll_belt, min_pitch_belt, min_yaw_belt, amplitude_roll_belt, amplitude_pitch_belt, amplitude_yaw_belt, var_total_accel_belt, avg_roll_belt, stddev_roll_belt, var_roll_belt, avg_pitch_belt, stddev_pitch_belt, var_pitch_belt, avg_yaw_belt, stddev_yaw_belt, var_yaw_belt, gyros_belt_x, gyros_belt_y, gyros_belt_z, accel_belt_x, accel_belt_y, accel_belt_z, magnet_belt_x, magnet_belt_y, magnet_belt_z, roll_arm, pitch_arm, yaw_arm, total_accel_arm, var_accel_arm, avg_roll_arm, stddev_roll_arm, var_roll_arm, avg_pitch_arm, stddev_pitch_arm, var_pitch_arm, avg_yaw_arm, stddev_yaw_arm, var_yaw_arm, gyros_arm_x, gyros_arm_y, gyros_arm_z, accel_arm_x, accel_arm_y, accel_arm_z, magnet_arm_x, magnet_arm_y, magnet_arm_z, kurtosis_roll_arm, kurtosis_picth_arm, kurtosis_yaw_arm, skewness_roll_arm, skewness_pitch_arm, skewness_yaw_arm, max_roll_arm, max_picth_arm, max_yaw_arm, min_roll_arm, min_pitch_arm, min_yaw_arm, amplitude_roll_arm, amplitude_pitch_arm, amplitude_yaw_arm, roll_dumbbell, pitch_dumbbell, yaw_dumbbell, kurtosis_roll_dumbbell, kurtosis_picth_dumbbell, kurtosis_yaw_dumbbell, skewness_roll_dumbbell, skewness_pitch_dumbbell, skewness_yaw_dumbbell, max_roll_dumbbell, max_picth_dumbbell, max_yaw_dumbbell, min_roll_dumbbell, min_pitch_dumbbell, min_yaw_dumbbell, amplitude_roll_dumbbell, amplitude_pitch_dumbbell, amplitude_yaw_dumbbell, total_accel_dumbbell, var_accel_dumbbell, avg_roll_dumbbell, stddev_roll_dumbbell, var_roll_dumbbell, avg_pitch_dumbbell, stddev_pitch_dumbbell, var_pitch_dumbbell, avg_yaw_dumbbell, stddev_yaw_dumbbell, var_yaw_dumbbell, gyros_dumbbell_x, gyros_dumbbell_y, gyros_dumbbell_z, accel_dumbbell_x, accel_dumbbell_y, accel_dumbbell_z, magnet_dumbbell_x, magnet_dumbbell_y, magnet_dumbbell_z, roll_forearm, pitch_forearm, yaw_forearm, kurtosis_roll_forearm, kurtosis_picth_forearm, kurtosis_yaw_forearm, skewness_roll_forearm, skewness_pitch_forearm, skewness_yaw_forearm, max_roll_forearm, max_picth_forearm, max_yaw_forearm, min_roll_forearm, min_pitch_forearm, min_yaw_forearm, amplitude_roll_forearm, amplitude_pitch_forearm, amplitude_yaw_forearm, total_accel_forearm, var_accel_forearm, avg_roll_forearm, stddev_roll_forearm, var_roll_forearm, avg_pitch_forearm, stddev_pitch_forearm, var_pitch_forearm, avg_yaw_forearm, stddev_yaw_forearm, var_yaw_forearm, gyros_forearm_x, gyros_forearm_y, gyros_forearm_z, accel_forearm_x, accel_forearm_y, accel_forearm_z, magnet_forearm_x, magnet_forearm_y, magnet_forearm_z, classe))
+
+df_nzv <- nearZeroVar(df, saveMetrics=TRUE)
+remaining <- df_nzv[which(df_nzv$nzv==FALSE),]
+
+df_all_var <- subset(df , select=rownames(remaining))
+
+# Remove Columsn with NAs
+df_rm_na <- df_all_var[ , colSums(is.na(df_all_var)) == 0]
+
+# Columns removed
+dim(df_all_var)
+dim(df_rm_na )
+
+
+# Find Correlated variables and then remove extra variables
+df_corr <- cor(subset(df_rm_na, select=-classe))
+
+## View the correlations between variables
+library(corrgram)
+# Order = FALSE, panel.pie, panel.pts
+corrgram(df_rm_na, order=FALSE, lower.panel=panel.shade,
+         upper.panel=panel.pie, text.panel=panel.txt,
+         col.regions=colorRampPalette(c("red","salmon","white","royalblue","navy")),
+        
+         main="Correlation of remaining features")
+
+
+########################################################################################################### train model on a sample as a test
+# 
+##########################################################################################################
+
+set.seed(575656)
+
+rand_train_sample <- df_rm_na[sample(1:nrow(df_rm_na), 1000,
+        replace=FALSE),]
+
+count(rand_train_sample, vars=c('classe') )
+
+mod3 <- train(classe~ . 
+              ,method='rf'
+              ,preProcess=c('pca') # this might stuff it??
+              ,mtry=7
+              ,ntree = 501
+              ,trControl=trainControl(method="cv",number=5)
+              ,prox=TRUE
+              ,allowParallel=TRUE
+              ,data = rand_train_sample
+             )
+
+my_ntree <- sqrt(ncol(rand_train_sample))
+
+
+mod_rf <- train(classe~ . 
+              ,method='rf'
+              ,allowParallel=TRUE
+              ,data = rand_train_sample
+             )
+
+print(mod_rf$finalModel)
+
+# save random forest model!
+save(mod_rf,file = "mod_rf.RData")
+
+# display tree
+getTree(mod_rf, k=1, labelVar=TRUE)
+
+# Do Predictions for rf model
+rf_predictions <- predict(mod_rf, newdata = raw_test)
+length(rf_predictions)
+length(raw_test$classe)
+
+pred <- data.frame(rf_predictions, classe=raw_test$classe)
+
+correct <- nrow(pred[with( which(rf_predictions==classe), data=pred ),])
+wrong <- nrow(pred[with( which(rf_predictions != classe), data=pred ),])
+
+pc_correct = correct/nrow(pred)
+pc_wrong = wrong/nrow(pred)
+
+
+# with PCA
+mod_rf <- train(classe~ . 
+              ,method='rf'
+              ,preProcess='pca'
+              ,allowParallel=TRUE
+              ,data = rand_train_sample
+             )
+
+
+### Run full model!
+
+mod_rf_full <- train(classe~ . 
+              ,method='rf'
+              ,allowParallel=TRUE
+              ,data = df_rm_na
+             )
+
+save(mod_rf_full, file = "mod_rf_full.RData")
+
+print(mod_rf_full$finalModel)
+
+
+# Do Predictions for rf model
+rf_full_predictions <- predict(mod_rf_full, newdata = raw_test)
+length(rf_full_predictions)
+length(raw_test$classe)
+
+pred <- data.frame(rf_full_predictions, classe=raw_test$classe)
+
+correct <- nrow(pred[with( which(rf_full_predictions==classe), data=pred ),])
+wrong <- nrow(pred[with( which(rf_full_predictions != classe), data=pred ),])
+
+pc_correct = correct/nrow(pred)
+pc_wrong = wrong/nrow(pred)
+
+
+
+
+
+#### Submit
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+## Write files for submission
+pml_write_files(rf_full_predictions)
+
+
+
+# Do var importance
+#RocImp2 <- varImp(svmFit, scale = FALSE)
+
+?getTree
+?plot.randomForest
+#getTree(randomForest(iris[,-5], iris[,5], ntree=10), 3, labelVar=TRUE)
+
+?randomForest
+?trainControl
+?train
+warnings()
+
+
+?rf
+########################################################################################################### Train Regression model on a sample as a test
+# 
+##########################################################################################################
+
+
+reg_mod <- train(classe~ . 
+              , method='rpart'
+              , preProcess=c('pca')
+              , data= rand_train_sample
+             )
+print(reg_mod$finalModel)
+
+# Plot Decision tree
+library(rattle)
+fancyRpartPlot(reg_mod$finalModel)
+
+# Do Predictions
+reg_predictions <- predict(reg_mod, newdata = raw_test)
+length(reg_predictions)
+length(raw_test$classe)
+
+pred <- data.frame(reg_predictions, classe=raw_test$classe)
+
+correct <- nrow(pred[with( which(reg_predictions==classe), data=pred ),])
+wrong <- nrow(pred[with( which(reg_predictions != classe), data=pred ),])
+
+pc_correct = correct/nrow(pred)
+pc_wrong = wrong/nrow(pred)
+
+# this regression model has 33% accuracy
+
+
+# With bagImpute
+mod4 <- train(classe~ . , method='rf', preProcess=c('bagImpute','pca'), trainControl(method='oob'), data= df_rm_na[sample(1000),]) # Use bagging too! in trainControl
+```
+
+
