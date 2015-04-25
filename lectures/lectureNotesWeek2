@@ -1,0 +1,186 @@
+=============================================================
+-- Videos Week 2
+=============================================================
+
+-------------------------------------------------------------
+-- Video 5: (Basic Preprocessing)
+-------------------------------------------------------------
+
+FIXING YOUR DATA BEFORE MODELLING!
+- - - - - - - - - - - - - - - - - - 
+
+Fixing skewed data
+---------------------
+centering and scaling fixes most problems in your data
+
+"BoxCox" transformations take data and make it normally distributed
+
+use qq plot to check how normal your data is qqnorm()!
+
+
+Missing values in DATA
+---------------------------
+Use method "knnImpute" to fix missing values using K nearest neigbours algorithm
+
+
+preprocess(x, method="knnImpute")
+
+look at preprocessing with CARET!
+
+look at links from week 2 slides!
+
+
+
+-------------------------------------------------------------
+-- Video 6: (Covariate Creation)
+-------------------------------------------------------------
+
+covariates = features = predictors
+
+Create Dummy Variables
+------------------------
+training$jobclass
+dummies <- dummyVars(wage~jobclass, data=training)
+head(predict(dummies,newdata=training)) 
+
+Getting rid of pointless variables:
+nsv <- nearZeroVar(training, saveMetrics=TRUE)
+nsv
+
+ALLOW FOR CURVY MODEL FITTING:
+--------------------------------
+library(splines)
+bsBasis <- bs(training$age, df=3)
+bsBasis
+
+Google feature extraction for data types eg emails, photos etc..
+
+gam() package in caret for splines
+
+
+------------------------------------------------------------
+-- Video 7: (Preprocessing with PCA)
+------------------------------------------------------------
+
+
+M <- abs(cor(training))
+diag(M) <- 0; % set diagonal elements to zeros since all variables have a correlation of 1 with themselves.
+
+which(M > 0.8, arr.ind = T)
+
+OUTPUT
+		row	col
+num415	34	32
+num857	32	34
+
+
+plot(training$num415, training$num857)
+
+X = 0.71 x num415 + 0.71 x num857
+Y = 0.71 x num415 - 0.71 x num857
+
+plot(X, Y)
+
+X = UDV' = Singular value decomposition
+
+PCA
+-----
+prComp <- prcomp(training)
+plot(prComp)
+
+prComp$rotation (matrix of weightrf vairable contribution)
+
+
+sometimes you need to do prComp(log(training )) to make you data gaussian
+
+typeColour <- ((training$type == "spam")*1+1)
+plot(X, Y, col=typeColour)
+
+
+Steps of Cleaning Data:
+- - - - - - - - - - - - - -
+1. do log or boxcox transforms
+2. knnImpute
+3. Dummy Variables
+4. nearZeroVar()
+5. PCA
+
+Always plot the data at every step to see if its working!
+
+PLOTTING
+--------
+qqnorm()
+bs()
+gam()
+
+
+
+
+
+------------------------------------------------------------
+-- Video 8: (Predicting With Regression)
+------------------------------------------------------------
+
+you can plot the fit of the regression model using
+
+lines(training$class, lm1$fitted, lwd=3)
+
+
+# RMSE on training error
+sqrt(sum(lm1$fitted - training$eruptions)^2)
+
+# Test Error RMSE
+sqrt(sum( predict(lm1, newdata = testdata) - training$eruptions)^2 )
+
+
+PLOTTING PREDICTION INTERVALS 
+see screen shot 6pm 15/4/2015
+
+------------------------------------------------------------
+-- Video 9: (Predicting With Regression and Multiple Covariates)
+------------------------------------------------------------
+This shows the data exploration process
+
+qplot(age, wage, colour=jobcalss, data=training)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,304 @@
+---
+title: "Practical Machine Learning Assignment"
+author: "Andrew Szwec"
+date: "Tuesday, April 21, 2015"
+output: html_document
+---
+
+This is a the Coursera Practical Machine Learning Assignment.
+
+## Load Data 
+```{r}
+# Set environment Variables to download files from BioConductor using the proxy
+Sys.setenv(http_proxy="http://proxy.au.deloitte.com:80/", http_proxy_user="aszwec:password") 
+
+
+# Load Data
+file1 <- 'C:/Users/aszwec/Documents/Coursera/pracML/assignment/pml-training.csv'
+file2 <- 'C:/Users/aszwec/Documents/Coursera/pracML/assignment/pml-testing.csv'
+
+raw_train <- data.frame(read.csv(file1, header=TRUE))
+raw_test <- data.frame(read.csv(file1, header=TRUE))
+
+head(raw_train)
+names(raw_train)
+ncol(raw_train)
+
+names(raw_train)[grepl('^gyros\\w+' , names(raw_train))]
+
+
+```
+
+## Data Exploration
+
+```{r, echo=FALSE}
+
+
+library(plyr)
+counts <- count(raw_train, var='classe')
+
+require(ggplot2)
+qplot(counts$classe, counts$freq, geom='bar', stat="identity", main='Number of Samples per Test', xlab ='Test Case', ylab='Count', fill=counts$classe)
+
+qplot(raw_train$pitch_belt, raw_train$roll_belt, geom='point', colour=raw_train$classe )
+
+qplot(raw_timestamp_part_1, gyros_arm_x, geom='point', facets=.~classe , data=raw_train, colour=raw_train$classe )
+# 
+# qplot(raw_timestamp_part_1, gyros_arm_y, geom='point', facets=.~classe , data=raw_train, colour=raw_train$classe )
+# 
+# qplot(raw_timestamp_part_1, gyros_arm_z, geom='point', facets=.~classe , data=raw_train, colour=raw_train$classe )
+
+
+# Look at what exercise each participant carried out? They all carried out each exercise
+count(raw_train, vars=c('user_name','classe') )
+
+
+```
+
+
+
+## Train 
+```{r}
+require(caret)
+
+# find non zero columns
+nzv <- nearZeroVar(raw_train, saveMetrics=TRUE)
+
+# Number of columns in train = 160
+nrow(nzv)
+# Number of columns in train that are not near zero = 100
+nrow(nzv[which(nzv$nzv==FALSE),])
+
+# Extract non zero col names
+nz_cols <- nzv[which(nzv$nzv==FALSE),]
+
+# Drop X column as this is just a row index
+keeps <- data.frame(col_name = rownames(nz_cols))
+
+?subset
+
+remaining_cols <- subset(raw_train , select=c(X ,user_name ,raw_timestamp_part_1 ,raw_timestamp_part_2 ,cvtd_timestamp ,num_window, new_window ,roll_belt ,pitch_belt ,yaw_belt ,total_accel_belt ,max_roll_belt ,max_picth_belt ,min_roll_belt ,min_pitch_belt ,amplitude_roll_belt ,amplitude_pitch_belt ,var_total_accel_belt ,avg_roll_belt ,stddev_roll_belt ,var_roll_belt ,avg_pitch_belt ,stddev_pitch_belt ,var_pitch_belt ,avg_yaw_belt ,stddev_yaw_belt ,var_yaw_belt ,gyros_belt_x ,gyros_belt_y ,gyros_belt_z ,accel_belt_x ,accel_belt_y ,accel_belt_z ,magnet_belt_x ,magnet_belt_y ,magnet_belt_z ,roll_arm ,pitch_arm ,yaw_arm ,total_accel_arm ,var_accel_arm ,gyros_arm_x ,gyros_arm_y ,gyros_arm_z ,accel_arm_x ,accel_arm_y ,accel_arm_z ,magnet_arm_x ,magnet_arm_y ,magnet_arm_z ,max_picth_arm ,max_yaw_arm ,min_yaw_arm ,amplitude_yaw_arm ,roll_dumbbell ,pitch_dumbbell ,yaw_dumbbell ,max_roll_dumbbell ,max_picth_dumbbell ,min_roll_dumbbell ,min_pitch_dumbbell ,amplitude_roll_dumbbell ,amplitude_pitch_dumbbell ,total_accel_dumbbell ,var_accel_dumbbell ,avg_roll_dumbbell ,stddev_roll_dumbbell ,var_roll_dumbbell ,avg_pitch_dumbbell ,stddev_pitch_dumbbell ,var_pitch_dumbbell ,avg_yaw_dumbbell ,stddev_yaw_dumbbell ,var_yaw_dumbbell ,gyros_dumbbell_x ,gyros_dumbbell_y ,gyros_dumbbell_z ,accel_dumbbell_x ,accel_dumbbell_y ,accel_dumbbell_z ,magnet_dumbbell_x ,magnet_dumbbell_y ,magnet_dumbbell_z ,roll_forearm ,pitch_forearm ,yaw_forearm ,max_picth_forearm ,min_pitch_forearm ,amplitude_pitch_forearm ,total_accel_forearm ,var_accel_forearm ,gyros_forearm_x ,gyros_forearm_y ,gyros_forearm_z ,accel_forearm_x ,accel_forearm_y ,accel_forearm_z ,magnet_forearm_x ,magnet_forearm_y ,magnet_forearm_z ,classe))
+
+
+# drop raw_timestamp_part_1 and raw_timestamp_part_2 from the training dataset, drop X
+remaining_cols <- subset(remaining_cols, select = c(-X, -raw_timestamp_part_1, -raw_timestamp_part_2))
+
+# Clean up dates
+remaining_cols$cvtd_timestamp_clean <- as.Date(substr(remaining_cols$cvtd_timestamp,1,10), format='%d/%m/%Y')
+
+# select user_name, classe, timestamp, mean(other variables) from table group by user_name, classe, timestamp
+
+#aggregate(cbind(remaining_cols$user_name, remaining_cols$classe, remaining_cols$cvtd_timestamp ), remaining_cols$total_accel_arm  , mean)
+
+install.packages("sqldf")
+require(sqldf)
+
+sqldf("select   user_name
+                ,classe
+                ,cvtd_timestamp_clean
+                ,count(*) as num_rows
+                ,avg(pitch_dumbbell) 
+        from remaining_cols 
+        group by user_name
+                 ,classe
+                 ,cvtd_timestamp_clean 
+     
+      ")
+# Look at one user named adelmo
+adelmo <- remaining_cols[with(which(user_name=='adelmo'), data=remaining_cols),]
+
+adelmo_2 <- adelmo[order(adelmo$num_window),]
+
+#
+adelmo_full <- head(raw_train[with(which(user_name=='adelmo'), data=raw_train),], n=500L)
+
+
+names(remaining_cols)[grepl('time', names(remaining_cols))]
+
+head(remaining_cols$raw_timestamp_part_1)
+head(remaining_cols$cvtd_timestamp)
+
+train_sample <- raw_train[sample(nrow(raw_train), 1000),]
+
+mod1 <- train(classe~ . , method='rf', preProcess='pca', data=train_sample) # Use bagging too! in trainControl()
+
+
+max(remaining_cols[which(remaining_cols$user_name == 'adelmo' ),]$num_window)
+
+
+
+
+df <- sqldf("select   user_name
+                ,num_window
+                ,case when new_window = 'yes' then 1 else 0 end as new_window
+                ,count(*) as num_rows
+                ,avg(pitch_dumbbell) as avg_pitch_dumbbell
+        from remaining_cols 
+        where user_name = 'adelmo'
+        group by user_name
+                ,num_window
+                ,new_window
+     
+      ")
+
+df2 <- sqldf("
+        select 
+                d.user_name
+                ,d.num_window
+                ,max(d.new_window) as new_window
+                ,avg(avg_pitch_dumbbell) as avg_pitch_dumbbell
+        from df d
+        Group by d.user_name
+                ,d.num_window
+      
+      ")
+
+
+df3 <- sqldf("
+        select 
+                d.user_name
+                ,d.num_window
+                ,d.new_window
+                ,e.num_window as num_window_2
+                ,e.new_window as new_window_2
+                ,(d.avg_pitch_dumbbell + e.avg_pitch_dumbbell)/2 as avg_pitch_dumbbell
+        from df2 d
+        inner join df e
+        on d.user_name = e.user_name
+        and d.num_window+1 = e.num_window
+        and d.new_window+1 = e.new_window
+      ")
+
+and (case when d.new_window = 0 then 1 else 0 end) = e.new_window
+x=1
+ifelse(xor(x,1),1,0)
+```
+
+## Features to Use according to paper:
+in the belt, were selected the mean and variance of the roll,
+maximum, range and variance of the accelerometer vector,
+variance of the gyro and variance of the magnetometer. In the arm, the variance of the accelerometer vector and the
+maximum and minimum of the magnetometer were selected.
+In the dumbbell, the selected features were the maximum of
+the acceleration, variance of the gyro and maximum and
+minimum of the magnetometer, while in the glove, the sum
+of the pitch and the maximum and minimum of the gyro
+were selected.
+
+Preprocessing: 10 fold cross validation of 2.5 secs window chunk size
+Algorithm: Random Forest
+Ensemble: using Bagging
+10 random forests each with 10 trees
+
+reference: Qualitative Activity Recognition of Weight Lifting Exercises
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th Augmented Human (AH) International Conference in cooperation with ACM SIGCHI (Augmented Human'13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+```{r}
+# Features recommended by Paper
+# belt:
+# - Roll mean 
+# - Roll variance 
+# - accelerometer vector maximum
+# - accelerometer vector range
+# - accelerometer vector variance
+# - gyro variance
+# - magnetometer variance
+# 
+# Arm:
+# - accelerometer variance vector 
+# - magnetometer maximum 
+# - magnetometer minimum
+# 
+# 
+# Dumbbell:
+# - acceleration vector maximum
+# - gyro variance 
+# - gyro maximum 
+# - magnetometer minimum
+# 
+# Glove:
+# - sum of the pitch 
+# - gyro maximum  
+# - gyro minimum
+
+
+names(raw_train)
+report_cols <- subset(raw_train , select=c(X ,user_name, raw_timestamp_part_1 ,raw_timestamp_part_2 ,cvtd_timestamp ,num_window, new_window ,avg_roll_belt ,var_roll_belt ,total_accel_belt ,gyros_belt_x ,gyros_belt_y ,gyros_belt_z  ,magnet_belt_x ,magnet_belt_y ,magnet_belt_z ,var_accel_arm ,magnet_arm_x ,magnet_arm_y ,magnet_arm_z ,total_accel_dumbbell ,gyros_dumbbell_x ,gyros_dumbbell_y ,gyros_dumbbell_z ,gyros_dumbbell_x ,gyros_dumbbell_y ,gyros_dumbbell_z ,magnet_dumbbell_x ,magnet_dumbbell_y,magnet_dumbbell_z ,pitch_forearm ,gyros_forearm_x  ,gyros_forearm_y  ,gyros_forearm_z   ,classe))
+
+ncol(report_cols)
+
+
+
+# Predictor Importance
+varImp 
+varImpPlot 
+```
+
+
+This section will use the features recommended by the report to train the model. These are contained in data frame 'report_cols'.
+
+This section will try and group the records into an analytic record for training purposes.
+
+Firstly it will try and count the amount of time each trial participant repeated each exercise.
+
+```{r}
+?subset
+count(subset(report_cols, user_name == 'adelmo'), var=c('user_name', 'classe', 'num_window') )
+
+train_cols <- subset(report_cols, select=c(avg_roll_belt ,var_roll_belt ,total_accel_belt ,gyros_belt_x ,gyros_belt_y ,gyros_belt_z  ,magnet_belt_x ,magnet_belt_y ,magnet_belt_z ,var_accel_arm ,magnet_arm_x ,magnet_arm_y ,magnet_arm_z ,total_accel_dumbbell ,gyros_dumbbell_x ,gyros_dumbbell_y ,gyros_dumbbell_z ,magnet_dumbbell_x ,magnet_dumbbell_y,magnet_dumbbell_z ,pitch_forearm ,gyros_forearm_x  ,gyros_forearm_y  ,gyros_forearm_z   ,classe) )
+
+
+
+
+# Try and Roll up data 
+?aggregate
+roll_up <- sqldf("
+        select 
+                a.user_name
+                ,a.classe
+                ,a.num_window
+                ,avg(a.avg_roll_belt) as avg_roll_belt
+                ,avg(a.var_roll_belt) as var_roll_belt
+                ,max(a.total_accel_belt) as total_accel_belt_max
+                ,max(total_accel_belt) - min(total_accel_belt) as total_accel_belt_range
+                ,AVG((a.total_accel_belt - sub.av) * (a.total_accel_belt - sub.av)) as total_accel_belt_var
+                ,var( sqrt( gyros_belt_x*gyros_belt_x + gyros_belt_y*gyros_belt_y + gyros_belt_z*gyros_belt_z)  )
+                
+                
+        
+        
+        
+        from report_cols a,
+         (SELECT AVG(total_accel_belt) AS av FROM report_cols) AS sub 
+        group by        a.user_name
+                        ,a.classe
+                        ,a.num_window
+      ")
+
+
+
+
+
+# Train Model
+mod2 <- train(classe~ . , method='rf', preProcess='pca', data=train_cols) # Use bagging too! in trainControl()
+
+# Print final model
+print(mod2$finalModel)
+
+
+# Make New Data
+newData <- subset(raw_test, select=c(avg_roll_belt ,var_roll_belt ,total_accel_belt ,gyros_belt_x ,gyros_belt_y ,gyros_belt_z  ,magnet_belt_x ,magnet_belt_y ,magnet_belt_z ,var_accel_arm ,magnet_arm_x ,magnet_arm_y ,magnet_arm_z ,total_accel_dumbbell ,gyros_dumbbell_x ,gyros_dumbbell_y ,gyros_dumbbell_z ,magnet_dumbbell_x ,magnet_dumbbell_y,magnet_dumbbell_z ,pitch_forearm ,gyros_forearm_x  ,gyros_forearm_y  ,gyros_forearm_z   ,classe) )
+
+# Score Data with Prediction
+prediction <- predict( mod2, newdata=newData )
+
+# See how well the model predicts
+tt <- data.frame(prediction, raw_test$classe) 
+
+
+```
+
+
+
+
+
