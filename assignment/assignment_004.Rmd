@@ -97,36 +97,30 @@ df_all_var <- subset(df , select=rownames(remaining))
 # Remove Columsn with NAs
 df_rm_na <- df_all_var[ , colSums(is.na(df_all_var)) == 0]
 
-# Find Correlated variables and then remove extra variables
+# Find Correlated variables 
 df_corr <- cor(subset(df_rm_na, select=-classe))
-
+```
+### Find correlation of variables in training data and plot chart
+```{r cache=TRUE}
+df_corr
 ## View the correlations between variables
-#library(corrgram)
-# Order = FALSE, panel.pie, panel.pts
-#corrgram(df_rm_na, order=FALSE, lower.panel=panel.shade,
-#         upper.panel=panel.pie, text.panel=panel.txt,
-#         col.regions=colorRampPalette(c("red","salmon","white","royalblue","navy")),       
-#        main="Correlation of remaining features")
+library(corrgram)
+corrgram(df_rm_na, order=FALSE, lower.panel=panel.shade,
+        upper.panel=panel.pie, text.panel=panel.txt,
+        col.regions=colorRampPalette(c("red","salmon","white","royalblue","navy")),       
+       main="Correlation of remaining features")
 ```
 
 ### Build Random Forest Model using 19,622 records
 ```{r cache=TRUE}
 set.seed(575656)
-#### Load the parallel processing packages
-#require(foreach)
-#require(doMC)
-#numCores = 8
-#registerDoMC(cores=numCores)
-
 ### Run full model!
-# mod_rf_full <- train(classe~ . 
-#               ,method='rf'
-#               ,allowParallel=TRUE
-#               ,data = df_rm_na
-#              )
-# save(mod_rf_full, file = "mod_rf_full.RData")
-
-load(file = "mod_rf_full.RData")
+mod_rf_full <- train(classe~ . 
+              ,method='rf'
+              ,allowParallel=TRUE
+              ,data = df_rm_na
+             )
+save(mod_rf_full, file = "mod_rf_full_002.RData")
 ```
 
 ### Print the final model details for the Random Forest Model
@@ -164,13 +158,12 @@ set.seed(575656)
 rand_train_sample <- df_rm_na[sample(1:nrow(df_rm_na), 1000, replace=FALSE),] 
 
 # Use this to train a quick regression model
-# reg_mod <- train(classe~ . 
-#               , method='rpart'
-#               , preProcess=c('pca')
-#               , data= rand_train_sample
-#              )
-# save(reg_mod, file = "reg_mod.RData") 
-load(file = "reg_mod.RData")
+reg_mod <- train(classe~ . 
+              , method='rpart'
+              , preProcess=c('pca')
+              , data= rand_train_sample
+             )
+save(reg_mod, file = "reg_mod_002.RData") 
 print(reg_mod$finalModel)
 # Plot Decision tree
 library(rattle)
