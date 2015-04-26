@@ -20,6 +20,7 @@ raw_train <- data.frame(read.csv(file1, header=TRUE))
 raw_test <- data.frame(read.csv(file2, header=TRUE))
 
 
+
 ```
 
 ## Data Exploration
@@ -142,8 +143,14 @@ mod_rf <- train(classe~ .
              )
 
 
-### Run full model!
+#### Load the parallel processing packages
+require(foreach)
+require(doMC)
+numCores = 8
+#registerDoMC(cores=numCores)
 
+
+### Run full model!
 mod_rf_full <- train(classe~ . 
               ,method='rf'
               ,allowParallel=TRUE

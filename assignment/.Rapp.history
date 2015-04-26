@@ -1,0 +1,89 @@
+hello
+start()
+x+1
+x = 1
+x
+x+2
+x
+clear
+clc
+c;r
+clr
+a<- 42
+a
+A <- a*2
+A
+print(a)
+cat(A,"\n")
+if(A>a)
+{}
+if(A>a) {cat(A,">",a,"\n")}
+length(1)
+pi
+time
+Square <- function(x) {return(x^2)}
+print(Square(4))
+print(Square(x=4))
+countdown
+countdown <- function(x){#
+	print(x)#
+	while(x>0){#
+		x <- x-1#
+		print(x)#
+	}#
+}
+countdown
+countdown(10)
+readinteger <- function(){#
+	n <- readline(prompt="Enter integer: ")#
+	return(as.integer(n))#
+}
+readinteger
+readinteger()
+x <- 'Hello'
+x
+as.integer(x)
+x <- 'a'
+as.integer(x)
+readinteger <- function(){#
+	n <- readline(prompt="Enter integer: ")#
+	n <- as.integer(n)#
+	if(is.na(n)){#
+		n <- readineger()#
+	}#
+	return(n)#
+}#
+print(readinteger())
+readinteger
+readinteger()
+readinteger <- function(){#
+	n <- readline(prompt="Enter integer: ")#
+	n <- as.integer(n)#
+	if(is.na(n)){#
+		n <- readinteger()#
+	}#
+	return(n)#
+}#
+print(readinteger())
+source(countdownFunction.r)
+source(/Users/andrewszwec/Documents/R/countdownFunction.r)
+source(""/Users/andrewszwec/Documents/R/countdownFunction.r")
+readinteger()
+ls
+pwd
+setwd("~/Documents/Coursera/dataScienceSpecialisation/pracML/assignment")
+ls
+ls()
+who
+dir
+dir()
+Rscript -e "library(knitr); knit('knitrTest.rmd')"
+library(knitr);
+knit('knitrTest.rmd')
+pdflatex knitrTest.md
+pdflatex(knitrTest.md)
+?knitr
+require(knitr) # required for knitting from rmd to md#
+require(markdown) # required for md to html #
+knit('knitrTest.rmd', 'knitrTest.md') # creates md file#
+markdownToHTML('knitrTest.md', 'knitrTest.html') # creates html file

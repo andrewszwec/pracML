@@ -1,13 +1,44 @@
 describe how you built the model
 ------------------------------------------
+Purpose: to build an algorithm to predict acitivity quality from the activity monitors.
+
+
+Procedure:
+1. The file pml-training.csv was spit into a training set (70%) and a cross-validation set (30%).
+
+2. These two data sets were cleaned up using the following methods then the new training set was used to train the random forest model and the cross-validation set was used to test the predictive power of this random forest model.
+
+3. Methods for cleaning and preparing the data for model training.
+	a) remove catagorical variables from dataset including "X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window ", "num_window".
+	b) Remove any features that have little variance or information value using nearZeroVar().
+	c) Remove columns with NA values in them.
+	d) Look at the correlation of the remaining attributes and decide whether they need to be reduced further.
+
+4. 	
+
 
 
 
 How you used cross validation
 ------------------------------------------
+I used cross-validation set (the 30% data held out from the training set) to check the models performance by comparing the predictions of the random forest model with the real classe values.
+
+The accuracy of the random forest model is 100% on the cross valiation set.
+
 
 What is the out of sample error rate
 ------------------------------------------
+The out of sample error is:
+
+out_of_sample_error <- 1/n sum( ( prediction - truth )^2 )
+
+The out of sample error for the random forest is __
+and the out of sample error for the regression model is __.
+
+This shows that the random forest model more accurately models the likely out of classe that the regression model.
+
+
+
 
 Assumptions and choices:
 ------------------------------------------
@@ -16,4 +47,13 @@ Assumptions and choices:
 Git Hub must include:
 - Rmd
 - HTML compiled file
+
+
+
+kniting from the commandline
+-------------------------------
+require(knitr) # required for knitting from rmd to md
+require(markdown) # required for md to html 
+knit('knitrTest.rmd', 'knitrTest.md') # creates md file
+markdownToHTML('knitrTest.md', 'knitrTest.html') # creates html file
 
