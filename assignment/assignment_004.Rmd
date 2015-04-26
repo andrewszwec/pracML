@@ -35,11 +35,9 @@ Types of dimensionality reduction used: nearZeroValue, correlation, pca,
 	c) Remove columns with NA values in them.
 	d) Look at the correlation of the remaining attributes and decide whether they need to be reduced further.
 
-
-##### Correlation
 ![corrgram](figure/corr.jpeg)
 
-## How you used cross validation
+## Cross Validation
 The cross-validation set (30% data held out from the training set) was used to check the models performance by comparing the predictions of the random forest model with the real classe values.
   
 The accuracy of the random forest model is 100% on the cross valiation set.
@@ -73,37 +71,24 @@ set.seed(975)
 inTrain = createDataPartition(raw_train$classe, p = 0.7)[[1]]
 training = raw_train[ inTrain,]     # 70% of records
 testing = raw_train[-inTrain,]      # 30% of reocrds
-
-
 ```
 
-### Something else
-```{r echo=FALSE}
-selected_cols <- c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt", "kurtosis_roll_belt", "kurtosis_picth_belt", "kurtosis_yaw_belt", "skewness_roll_belt", "skewness_roll_belt.1", "skewness_yaw_belt", "max_roll_belt", "max_picth_belt", "max_yaw_belt", "min_roll_belt", "min_pitch_belt", "min_yaw_belt", "amplitude_roll_belt", "amplitude_pitch_belt", "amplitude_yaw_belt", "var_total_accel_belt", "avg_roll_belt", "stddev_roll_belt", "var_roll_belt", "avg_pitch_belt", "stddev_pitch_belt", "var_pitch_belt", "avg_yaw_belt", "stddev_yaw_belt", "var_yaw_belt", "gyros_belt_x", "gyros_belt_y", "gyros_belt_z", "accel_belt_x", "accel_belt_y", "accel_belt_z", "magnet_belt_x", "magnet_belt_y", "magnet_belt_z", "roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm", "var_accel_arm", "avg_roll_arm", "stddev_roll_arm", "var_roll_arm", "avg_pitch_arm", "stddev_pitch_arm", "var_pitch_arm", "avg_yaw_arm", "stddev_yaw_arm", "var_yaw_arm", "gyros_arm_x", "gyros_arm_y", "gyros_arm_z", "accel_arm_x", "accel_arm_y", "accel_arm_z", "magnet_arm_x", "magnet_arm_y", "magnet_arm_z", "kurtosis_roll_arm", "kurtosis_picth_arm", "kurtosis_yaw_arm", "skewness_roll_arm", "skewness_pitch_arm", "skewness_yaw_arm", "max_roll_arm", "max_picth_arm", "max_yaw_arm", "min_roll_arm", "min_pitch_arm", "min_yaw_arm", "amplitude_roll_arm", "amplitude_pitch_arm", "amplitude_yaw_arm", "roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "kurtosis_roll_dumbbell", "kurtosis_picth_dumbbell", "kurtosis_yaw_dumbbell", "skewness_roll_dumbbell", "skewness_pitch_dumbbell", "skewness_yaw_dumbbell", "max_roll_dumbbell", "max_picth_dumbbell", "max_yaw_dumbbell", "min_roll_dumbbell", "min_pitch_dumbbell", "min_yaw_dumbbell", "amplitude_roll_dumbbell", "amplitude_pitch_dumbbell", "amplitude_yaw_dumbbell", "total_accel_dumbbell", "var_accel_dumbbell", "avg_roll_dumbbell", "stddev_roll_dumbbell", "var_roll_dumbbell", "avg_pitch_dumbbell", "stddev_pitch_dumbbell", "var_pitch_dumbbell", "avg_yaw_dumbbell", "stddev_yaw_dumbbell", "var_yaw_dumbbell", "gyros_dumbbell_x", "gyros_dumbbell_y", "gyros_dumbbell_z", "accel_dumbbell_x", "accel_dumbbell_y", "accel_dumbbell_z", "magnet_dumbbell_x", "magnet_dumbbell_y", "magnet_dumbbell_z", "roll_forearm", "pitch_forearm", "yaw_forearm", "kurtosis_roll_forearm", "kurtosis_picth_forearm", "kurtosis_yaw_forearm", "skewness_roll_forearm", "skewness_pitch_forearm", "skewness_yaw_forearm", "max_roll_forearm", "max_picth_forearm", "max_yaw_forearm", "min_roll_forearm", "min_pitch_forearm", "min_yaw_forearm", "amplitude_roll_forearm", "amplitude_pitch_forearm", "amplitude_yaw_forearm", "total_accel_forearm", "var_accel_forearm", "avg_roll_forearm", "stddev_roll_forearm", "var_roll_forearm", "avg_pitch_forearm", "stddev_pitch_forearm", "var_pitch_forearm", "avg_yaw_forearm", "stddev_yaw_forearm", "var_yaw_forearm", "gyros_forearm_x", "gyros_forearm_y", "gyros_forearm_z", "accel_forearm_x", "accel_forearm_y", "accel_forearm_z", "magnet_forearm_x", "magnet_forearm_y", "magnet_forearm_z", "classe")
 
-```
-
-### Something else
+### Remove categorical variables, leaving only the sensor readings
 ```{r cache=TRUE }
-# Take raw train and remove first seven attr
-require(caret)
-
-numMethod <- names( head(  raw_train[,8:ncol(raw_train)], n=1L) )
-dfmethod <- names(df) 
-
-numMethod
-
-dfmethod %in% numMethod
-
-
 df <- raw_train[,8:ncol(raw_train)]
-df <- subset(training , select=selected_cols)
-
 ```
 
-### Something else
-```{r cache=TRUE}
+### Data Preparation
+Take care of:  
+- Near Zero Variance columns  
+- Columns with NAs  
+- Inspect Correlated variables  
+ 
 
+```{r cache=TRUE}
+require(caret)
+## Find columns with near zero variance and remove them
 df_nzv <- nearZeroVar(df, saveMetrics=TRUE)
 remaining <- df_nzv[which(df_nzv$nzv==FALSE),]
 
@@ -111,11 +96,6 @@ df_all_var <- subset(df , select=rownames(remaining))
 
 # Remove Columsn with NAs
 df_rm_na <- df_all_var[ , colSums(is.na(df_all_var)) == 0]
-
-# Columns removed
-dim(df_all_var)
-dim(df_rm_na )
-
 
 # Find Correlated variables and then remove extra variables
 df_corr <- cor(subset(df_rm_na, select=-classe))
@@ -127,23 +107,16 @@ df_corr <- cor(subset(df_rm_na, select=-classe))
 #         upper.panel=panel.pie, text.panel=panel.txt,
 #         col.regions=colorRampPalette(c("red","salmon","white","royalblue","navy")),       
 #        main="Correlation of remaining features")
-
 ```
 
-### Something else
+### Build Random Forest Model using 19,622 records
 ```{r cache=TRUE}
-########################################################################################################### train model on a sample as a test
-# 
-##########################################################################################################
-
 set.seed(575656)
-
 #### Load the parallel processing packages
 #require(foreach)
 #require(doMC)
 #numCores = 8
 #registerDoMC(cores=numCores)
-
 
 ### Run full model!
 # mod_rf_full <- train(classe~ . 
@@ -151,47 +124,44 @@ set.seed(575656)
 #               ,allowParallel=TRUE
 #               ,data = df_rm_na
 #              )
-
 # save(mod_rf_full, file = "mod_rf_full.RData")
 
 load(file = "mod_rf_full.RData")
-
-print(mod_rf_full$finalModel)
-
-varImp(mod_rf_full, useModel=TRUE)
-
-
-
-# Do Predictions for rf model
-rf_full_predictions <- predict(mod_rf_full, newdata = testing)
-
-pred <- data.frame(rf_full_predictions, classe=testing$classe)
-
-correct <- nrow(pred[with( which(rf_full_predictions==classe), data=pred ),])
-wrong <- nrow(pred[with( which(rf_full_predictions != classe), data=pred ),])
-
-pc_correct = correct/nrow(pred)
-pc_wrong = wrong/nrow(pred)
-
-out_of_sample_error <- 1/(length(rf_full_predictions)) * sum( ( wrong )^2 )
-
-
-
-
 ```
 
-### Something else
+### Print the final model details for the Random Forest Model
 ```{r cache=TRUE}
+print(mod_rf_full$finalModel)
+```
 
-########################################################################################################### Train Regression model on a sample as a test
-# 
-##########################################################################################################
+### Look at the variable importance to the model 
+```{r cache = TRUE}
+varImp(mod_rf_full, useModel=TRUE)
+```
 
+### Use Random Forest model to predict values on the cross-validation set
+```{r cache=TRUE}
+rf_full_predictions <- predict(mod_rf_full, newdata = testing)
+pred <- data.frame(rf_full_predictions, classe=testing$classe)
+correct <- nrow(pred[with( which(rf_full_predictions==classe), data=pred ),])
+wrong <- nrow(pred[with( which(rf_full_predictions != classe), data=pred ),])
+percent_correct = correct/nrow(pred)*100
+percent_correct
+percent_wrong = wrong/nrow(pred)*100
+percent_wrong
+```
+
+### The Out of sample error is...
+```{r cache = TRUE}
+out_of_sample_error <- 1/(length(rf_full_predictions)) * sum( ( wrong )^2 )
+out_of_sample_error
+```
+
+### Train a regression model using a small random sample from the training set
+```{r cache=TRUE}
 set.seed(575656)
-
 # Get a random sample from the data frame with the NA columns removed
-rand_train_sample <- df_rm_na[sample(1:nrow(df_rm_na), 1000,
-        replace=FALSE),] 
+rand_train_sample <- df_rm_na[sample(1:nrow(df_rm_na), 1000, replace=FALSE),] 
 
 # Use this to train a quick regression model
 # reg_mod <- train(classe~ . 
@@ -199,34 +169,28 @@ rand_train_sample <- df_rm_na[sample(1:nrow(df_rm_na), 1000,
 #               , preProcess=c('pca')
 #               , data= rand_train_sample
 #              )
-# print(reg_mod$finalModel)
-
 # save(reg_mod, file = "reg_mod.RData") 
 load(file = "reg_mod.RData")
-
+print(reg_mod$finalModel)
 # Plot Decision tree
 library(rattle)
 fancyRpartPlot(reg_mod$finalModel)
+```
+You can see that the regression model will only every predict Classe = A, B, D
 
-# Do Predictions
+### Use the regression model to predict the classe variable of the cross-validation set and calculate the out of sample error
+```{r cache = TRUE}
 reg_predictions <- predict(reg_mod, newdata = testing)
-
 pred <- data.frame(reg_predictions, classe=testing$classe)
-
 correct <- nrow(pred[with( which(reg_predictions==classe), data=pred ),])
 wrong <- nrow(pred[with( which(reg_predictions != classe), data=pred ),])
-
-pc_correct = correct/nrow(pred)
-pc_wrong = wrong/nrow(pred)
-
+percent_correct = correct/nrow(pred)*100
+percent_correct
+percent_wrong = wrong/nrow(pred)*100
+percent_wrong
 out_of_sample_error <- 1/(length(reg_predictions)) * sum( ( wrong )^2 )
 out_of_sample_error
-
-
-# this regression model has 33% accuracy
-
-
 ```
 
-### Something else
+
 
