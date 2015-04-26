@@ -35,7 +35,7 @@ The correlation between the last 53 variables remaining in the set used to train
 	c) Remove columns with NA values in them.
 	d) Look at the correlation of the remaining attributes and decide whether they need to be reduced further.
 
-![corrgram](figure/corr.jpeg)
+<img src="figure/corr.jpeg" height="452px" width="400px" />
 
 ## Cross Validation
 The cross-validation set (30% data held out from the training set) was used to check the models performance by comparing the predictions of the random forest model with the real classe values.
@@ -47,9 +47,9 @@ The out of sample error is:
 
 $$ \textit{Out of Sample Error (MSE)} = \frac{1}{n}  \sum_{i=1}^{n} (Prediction_{i} - Truth_{i})^2  $$
 
-The out of sample error, using mean squared error (MSE), for the random forest is 0. While the out of sample error for the regression model is 2624.452 (MSE).
+The out of sample error, using mean squared error (MSE), for the random forest is 0. While the out of sample error for the decsion tree model is 2624.452 (MSE).
 
-This shows that the random forest model more accurately predicts the outcome of the classe variable than the regression model.
+This shows that the random forest model more accurately predicts the outcome of the classe variable than the decsion tree model.
 
 ## Appendix
 The following appendice documents the procedures that were carried out to produce the machine learning algorithm and the final outcomes.
@@ -102,7 +102,7 @@ df_corr <- cor(subset(df_rm_na, select=-classe))
 ```
 ### Find correlation of variables in training data and plot chart
 ```{r cache=TRUE}
-df_corr
+
 ## View the correlations between variables
 library(corrgram)
 corrgram(df_rm_na, order=FALSE, lower.panel=panel.shade,
@@ -151,13 +151,13 @@ out_of_sample_error <- 1/(length(rf_full_predictions)) * sum( ( wrong )^2 )
 out_of_sample_error
 ```
 
-### Train a regression model using a small random sample from the training set
+### Train a decision tree model using a small random sample from the training set
 ```{r cache=TRUE}
 set.seed(575656)
 # Get a random sample from the data frame with the NA columns removed
 rand_train_sample <- df_rm_na[sample(1:nrow(df_rm_na), 1000, replace=FALSE),] 
 
-# Use this to train a quick regression model
+# Use this to train a quick decision tree model
 reg_mod <- train(classe~ . 
               , method='rpart'
               , preProcess=c('pca')
@@ -169,9 +169,10 @@ print(reg_mod$finalModel)
 library(rattle)
 fancyRpartPlot(reg_mod$finalModel)
 ```
-You can see that the regression model will only every predict Classe = A, B, D
+   
+You can see that the decision tree model will only every predict Classe = A and E.
 
-### Use the regression model to predict the classe variable of the cross-validation set and calculate the out of sample error
+### Use the decision tree to predict the classe variable of the cross-validation set and calculate the out of sample error
 ```{r cache = TRUE}
 reg_predictions <- predict(reg_mod, newdata = testing)
 pred <- data.frame(reg_predictions, classe=testing$classe)
