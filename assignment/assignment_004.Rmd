@@ -51,6 +51,11 @@ The out of sample error, using mean squared error (MSE), for the random forest i
 
 This shows that the random forest model more accurately predicts the outcome of the classe variable than the decsion tree model.
 
+## Final Outcome
+The final outcome of this assigment is to submit a series of files each containing a letter from the vector below. This vector below contains the predicted classes for the 20 sample cases required for submission.  
+  
+[1] B A B A A E D B A A B C B A E E A B B B
+   
 ## Appendix
 The following appendice documents the procedures that were carried out to produce the machine learning algorithm and the final outcomes.
 
@@ -149,6 +154,12 @@ percent_wrong
 ```{r cache = TRUE}
 out_of_sample_error <- 1/(length(rf_full_predictions)) * sum( ( wrong )^2 )
 out_of_sample_error
+```
+
+### Use random forest model to predict the outcome of the 20 test cases for submission
+```{r}
+rf_submission_outcomes <- predict(mod_rf_full, newdata = raw_test)
+rf_submission_outcomes
 ```
 
 ### Train a decision tree model using a small random sample from the training set
