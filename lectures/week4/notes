@@ -1,0 +1,102 @@
+==============================================
+== Week 4 Lecture Notes
+==============================================
+
+----------------------------------------------
+-- Video 1 - Regularised Regression
+----------------------------------------------
+
+Regularisation:
+----------------
+Pros: help with bias/variance 
+helps with model selection
+
+Cons: computationally more demanding on large datasets
+Does not perform as well as random forests and boosting
+
+taking out highly correlated variables means you loose some variance but you simplifiy your model.
+
+
+Hard Thresholding
+- - - - - - - - - -
+penalty term lambda can reduce
+- complexity
+- variance
+- reduces structure of the problem
+
+Lamba 
+controls size of coeffs
+controls about of regularisation
+As lambda tends to 0, we obtain the least squares solution.
+As lambda tends to infinity all parameters go to zero
+
+Lasso approach shrinks parameters and helps with model selection
+
+train(x, method='ridge' or 'lasso' or 'relaxo')
+
+----------------------------------------
+-- Video 2 - Combining Predictors (ensembling)
+----------------------------------------
+combine using averaging / voting
+
+Combing classifiers improves accuracy, but reduces interpretability.
+
+101 interpendant classifiers you get 99% accuracy.
+
+
+Model Stacking (ensemble)
+- - - - - - - - - - - -
+build 2 models then combine their predictions with the class variable in a data frame and build a new prediction model using the predictions of the two other models as the input features.
+
+eg.
+
+rf_mod <- train(class~., method="rf", data=train)
+
+glm_mod <- train(class~., method="glm", data=train)
+
+# do predictions
+rf_pred <- predict(rf_mod, testing)
+glm_pred <- predict(glm_mod, testing)
+
+new_df <- data.frame(rf_pred, glm_pred, test$class)
+
+ensemble <- train(class~., method="gam", data= new_df)
+
+predictions <- predict(ensemble, testing)
+
+
+
+
+sqrt(sum((pred1 - testing$wage)^2))
+sqrt(sum((pred2 - testing$wage)^2))
+sqrt(sum((combined_pred - testing$wage)^2))
+
+
+go
+1. Train
+2. Test
+3. Validate
+
+Ensembling Method
+- - - - - - - - - - -
+1. Build an odd number of models
+2. Predict with each model on training set.
+3. Predict class by majority vote
+
+You could use caretEnsemble() package (beta)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

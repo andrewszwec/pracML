@@ -57,3 +57,10 @@ require(markdown) # required for md to html
 knit('knitrTest.rmd', 'knitrTest.md') # creates md file
 markdownToHTML('knitrTest.md', 'knitrTest.html') # creates html file
 
+
+Options added to .Rprofile
+-------------------------------------------------------
+options(rpubs.upload.method = "internal")
+
+options(RCurlOptions = list(verbose = FALSE, capath = system.file("CurlSSL", "cacert.pem", package = "RCurl"), ssl.verifypeer = FALSE))
+
