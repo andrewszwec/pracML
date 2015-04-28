@@ -86,6 +86,113 @@ Ensembling Method
 You could use caretEnsemble() package (beta)
 
 
+----------------------------------------
+-- Video 3 - (Forecasting)
+----------------------------------------
+difficulties: data over time, trends, seasonality, cyclic.
+
+Subsampling into train and test is more tricky.
+
+Similar problems with spatial data.
+
+Population map, not insights!
+
+Google data
+- - --  - - -- - 
+library(quantmod) # gets stock data
+ts1 <- ts() # Timeseries function
+decompose(ts1)
+
+
+library(quantmod) or quandl packages
+from.dat <- as.Date("01/01/08", format="%m/%d/%y")
+to.dat <- as.Date("12/31/13", format="%m/%d/%y")
+getSymbols("GOOG", src="google", from = from.dat, to = to.dat)
+head(GOOG)
+
+
+mGoog <- to.monthly(GOOG)
+googOpen <- Op(mGoog)
+ts1 <- ts(googOpen,frequency=12)
+plot(ts1,xlab="Years+1", ylab="GOOG")
+
+plot(decompose(ts1),xlab="Years+1")
+
+ts1Train <- window(ts1,start=1,end=5)
+ts1Test <- window(ts1,start=5,end=(7-0.01))
+ts1Train
+
+## Moving Average
+plot(ts1Train)
+lines(ma(ts1Train,order=3),col="red")
+
+## Exponential Smoothing
+yt+1 = alpha * yt (1-alpha)*yt-1
+
+ets1 <- ets(ts1Train,model="MMM")
+fcast <- forecast(ets1)
+plot(fcast); lines(ts1Test,col="red")
+
+## Model Accuracy
+accuracy(fcast,ts1Test)
+
+Books to read: http://en.wikipedia.org/wiki/Forecasting
+
+https://www.otexts.org/fpp/
+
+http://www-bcf.usc.edu/~gareth/ISL/
+
+http://statweb.stanford.edu/~tibs/ElemStatLearn/
+
+http://www.stat.washington.edu/raftery/Research/PDF/fraley2002.pdf
+
+http://en.wikipedia.org/wiki/Linear_discriminant_analysis
+
+http://en.wikipedia.org/wiki/Quadratic_classifier
+
+
+
+----------------------------------------
+-- Video 4 - (Unsupervised prediction)
+----------------------------------------
+Unsupervised learning.
+
+When you dont know the target that you are predicting you can 
+1. build a cluster model
+2. name the clusters
+3. build a predictor for the clusters 
+4. score a new dataset with cluster name
+
+
+Kmeans clustering with IRIS dataset
+- - - - - - - - --  -- - - - - - -- - -
+
+kMeans1 <- kmeans(subset(training,select=-c(Species)),centers=3)
+training$clusters <- as.factor(kMeans1$cluster)
+qplot(Petal.Width,Petal.Length,colour=clusters,data=training)
+
+modFit <- train(clusters ~.,data=subset(training,select=-c(Species)),method="rpart")
+table(predict(modFit,training),training$Species)
+
+testClusterPred <- predict(modFit,testing) 
+table(testClusterPred ,testing$Species)
+
+
+
+
+cl_predict in the clue package
+
+- can be used to create product recommendation engines 
+
+
+
+READING
+- - - - - -
+http://en.wikipedia.org/wiki/Recommender_system
+
+http://www-bcf.usc.edu/~gareth/ISL/
+
+
 
 
 

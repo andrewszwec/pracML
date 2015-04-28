@@ -1,0 +1,89 @@
+---
+title: "Quiz 4"
+author: "Andrew Szwec"
+date: "28 April 2015"
+output: html_document
+---
+
+## Question 1
+```{r}
+library(ElemStatLearn)
+data(vowel.train)
+data(vowel.test) 
+
+set.seed(33833)
+
+vowel.train$y <- as.factor(vowel.train$y)
+vowel.test$y <- as.factor(vowel.test$y)
+
+library(caret)
+
+inTrain = createDataPartition(vowel.train$y, p = 0.7)[[1]]
+training = vowel.train[ inTrain,]     # 70% of records
+testing = vowel.train[-inTrain,]      # 30% of reocrds
+
+mod1 <- train(y~. , mehtod="rf", data=vowel.train )
+mod2 <- train(y~. , mehtod="gbm", data=vowel.train )
+
+print(mod1$finalModel)
+print(mod2$finalModel)
+
+pred1 <- predict(mod1, vowel.test )
+pred2 <- predict(mod2, vowel.test )
+
+correct1 <- length(  pred1[which(pred1==vowel.test$y)]  )
+acc1 <- correct1/length(vowel.test$y)
+acc1 # 0.6103896
+
+correct2 <- length(pred2[which(pred2==vowel.test$y)])
+acc2 <- correct2/length(vowel.test$y)
+acc2 # 0.6168831
+
+
+```
+
+
+## Question 2
+```{r}
+library(caret)
+library(gbm)
+set.seed(3433)
+library(AppliedPredictiveModeling)
+data(AlzheimerDisease)
+adData = data.frame(diagnosis,predictors)
+inTrain = createDataPartition(adData$diagnosis, p = 3/4)[[1]]
+training = adData[ inTrain,]
+testing = adData[-inTrain,]
+
+set.seed(62433)
+
+
+mod_rf <- train(diagnosis~. , mehtod="rf", data=training )
+mod_gbm <- train(diagnosis~. , mehtod="gbm", data=training )
+mod_lda <- train(diagnosis~. , mehtod="lda", data=training )
+
+pred1 <- predict(mod_rf, testing )
+pred2 <- predict(mod_gbm, testing )
+pred3 <- predict(mod_lda, testing )
+
+df2 <- data.frame(pred1, pred2, pred3, diagnosis=testing$diagnosis)
+head(df2)
+
+mod_fn <- train(diagnosis~. , mehtod="rf", data=df2 )
+mod_fn$finalModel
+# 0.7605741
+
+pred_fn <- predict(mod_fn, testing )
+
+tp <- length( pred_fn[which(pred_fn==testing$diagnosis)]  )
+tn <- 
+      
+?confusionMatrix()
+(tp+tn) / (tp+fp+fn+tn)
+
+
+confusionMatrix(pred_fn, )
+
+```
+
+
