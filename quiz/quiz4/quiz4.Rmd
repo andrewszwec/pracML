@@ -7,6 +7,8 @@ output: html_document
 
 ## Question 1
 ```{r}
+setwd("~/Documents/Coursera/dataScienceSpecialisation/pracML/quiz/quiz4")
+
 library(ElemStatLearn)
 data(vowel.train)
 data(vowel.test) 
@@ -25,25 +27,31 @@ testing = vowel.train[-inTrain,]      # 30% of reocrds
 mod1 <- train(y~. , mehtod="rf", data=vowel.train )
 mod2 <- train(y~. , mehtod="gbm", data=vowel.train )
 
+save(mod1, file = "mod1_001.RData")
+save(mod2, file = "mod2_001.RData")
+
 print(mod1$finalModel)
 print(mod2$finalModel)
 
-pred1 <- predict(mod1, vowel.test )
-pred2 <- predict(mod2, vowel.test )
-
-correct1 <- length(  pred1[which(pred1==vowel.test$y)]  )
-acc1 <- correct1/length(vowel.test$y)
-acc1 # 0.6103896
-
-correct2 <- length(pred2[which(pred2==vowel.test$y)])
-acc2 <- correct2/length(vowel.test$y)
-acc2 # 0.6168831
-
-
+predv1 <- predict(mod1, vowel.test )
+predv2 <- predict(mod2, vowel.test )
 ```
 
 
-## Question 2
+## View Confusion matrix for random forest
+```{r}
+      confusionMatrix(predv1, vowel.test$y)
+```
+0.5952
+
+
+## View Confusion matrix for random forest
+```{r}
+      confusionMatrix(predv2, vowel.test$y)
+```
+0.6126
+
+# Question 2
 ```{r}
 library(caret)
 library(gbm)
@@ -62,6 +70,10 @@ mod_rf <- train(diagnosis~. , mehtod="rf", data=training )
 mod_gbm <- train(diagnosis~. , mehtod="gbm", data=training )
 mod_lda <- train(diagnosis~. , mehtod="lda", data=training )
 
+save(mod_rf, file = "mod_rf_001.RData")
+save(mod_gbm, file = "mod_gbm_001.RData")
+save(mod_lda, file = "mod_lda_001.RData")
+
 pred1 <- predict(mod_rf, testing )
 pred2 <- predict(mod_gbm, testing )
 pred3 <- predict(mod_lda, testing )
@@ -72,18 +84,121 @@ head(df2)
 mod_fn <- train(diagnosis~. , mehtod="rf", data=df2 )
 mod_fn$finalModel
 # 0.7605741
-
+# Predict using the ensemble
 pred_fn <- predict(mod_fn, testing )
+```
+## View Confusion matrix for ensemble
+```{r}
+      confusionMatrix(pred_fn, testing$diagnosis)
+      # From confusion matrix
+      tp <- 11
+      tn <- 54
+      fp <- 6
+      fn <- 11
+      acc1 <- (tp+tn)/(tp+fp+fn+tn)
+```
+## Accuracy of ensemble on test set is ...
+```{r}
+acc1
+```
 
-tp <- length( pred_fn[which(pred_fn==testing$diagnosis)]  )
-tn <- 
-      
-?confusionMatrix()
-(tp+tn) / (tp+fp+fn+tn)
+## View Confusion matrix for random forest
+```{r}
+      confusionMatrix(pred1, testing$diagnosis)
+      # From confusion matrix
+      tp <- 11
+      tn <- 52
+      fp <- 8
+      fn <- 11
+      acc_rf <- (tp+tn)/(tp+fp+fn+tn)
+```
+## Accuracy of random forest on test set is ...
+```{r}
+acc_rf
+```
 
+## View Confusion matrix for gbm
+```{r}
+      confusionMatrix(pred2, testing$diagnosis)
+      # From confusion matrix
+      tp <- 11
+      tn <- 54
+      fp <- 6
+      fn <- 11
+      acc_gbm <- (tp+tn)/(tp+fp+fn+tn)
+```
+## Accuracy of gbm on test set is ...
+```{r}
+acc_gbm
+```
 
-confusionMatrix(pred_fn, )
+## View Confusion matrix for lda
+```{r}
+      confusionMatrix(pred3, testing$diagnosis)
+      # From confusion matrix
+      tp <- 10
+      tn <- 54
+      fp <- 6
+      fn <- 12
+      acc_lda <- (tp+tn)/(tp+fp+fn+tn)
+```
+## Accuracy of lda on test set is ...
+```{r}
+acc_lda
+```
+
+```{r}
+acc1
+acc_rf
+acc_gbm
+acc_lda
 
 ```
+### Therefore ensemble accuracy is 0.79 and is same as GBM
+
+#Question 3
+```{r}
+require(caret)
+set.seed(3523)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
+
+set.seed(233)
+?train
+mod_lasso <- train(CompressiveStrength~.,method="lasso", data=training   )
+print(mod_lasso$finalModel)
+
+
+head(training)
+
+?plot.enet
+require(elasticnet)
+mod_enet <- enet(x=training, y=CompressiveStrength, lambda=100)
+
+
+
+sapply(mod_lasso, function(x) names(x))
+```
+
+
+```{r}
+library(lubridate)  # For year() function below
+dat = read.csv("/Users/andrewszwec/Documents/Coursera/dataScienceSpecialisation/pracML/quiz/quiz4/gaData.csv")
+training = dat[year(dat$date) < 2012,]
+testing = dat[(year(dat$date)) > 2011,]
+tstrain = ts(training$visitsTumblr)
+
+require(forecast)
+?bats
+fit <- bats(tstrain, )
+plot(forecast(fit))
+
+?forecast
+```
+
+
 
 
