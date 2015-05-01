@@ -10,6 +10,7 @@ output: html_document
 setwd("~/Documents/Coursera/dataScienceSpecialisation/pracML/quiz/quiz4")
 
 library(ElemStatLearn)
+?vowel.train
 data(vowel.train)
 data(vowel.test) 
 
@@ -27,6 +28,10 @@ testing = vowel.train[-inTrain,]      # 30% of reocrds
 mod1 <- train(y~. , mehtod="rf", data=vowel.train )
 mod2 <- train(y~. , mehtod="gbm", data=vowel.train )
 
+rf acc = 0.9358227
+gbm acc = 0.9364548
+
+
 save(mod1, file = "mod1_001.RData")
 save(mod2, file = "mod2_001.RData")
 
@@ -35,6 +40,13 @@ print(mod2$finalModel)
 
 predv1 <- predict(mod1, vowel.test )
 predv2 <- predict(mod2, vowel.test )
+
+length(predv1[which(predv1 == vowel.test$y)])/length(vowel.test$y)
+# 0.5952381
+length(predv2[which(predv2 == vowel.test$y)])/length(vowel.test$y)
+# 0.61
+
+
 ```
 
 
@@ -167,38 +179,86 @@ training = concrete[ inTrain,]
 testing = concrete[-inTrain,]
 
 set.seed(233)
-?train
+
 mod_lasso <- train(CompressiveStrength~.,method="lasso", data=training   )
 print(mod_lasso$finalModel)
+plot.enet(mod_lasso$finalModel)
 
 
-head(training)
 
 ?plot.enet
 require(elasticnet)
 mod_enet <- enet(x=training, y=CompressiveStrength, lambda=100)
 
-
+?lars
+lars::lars(training, CompressiveStrength, type="lasso", ) 
 
 sapply(mod_lasso, function(x) names(x))
 ```
 
-
+# Question 4
 ```{r}
 library(lubridate)  # For year() function below
 dat = read.csv("/Users/andrewszwec/Documents/Coursera/dataScienceSpecialisation/pracML/quiz/quiz4/gaData.csv")
 training = dat[year(dat$date) < 2012,]
 testing = dat[(year(dat$date)) > 2011,]
 tstrain = ts(training$visitsTumblr)
+tstest  = ts(testing$visitsTumblr)
+      
 
-require(forecast)
-?bats
-fit <- bats(tstrain, )
-plot(forecast(fit))
+dim(dat)
+600
+nrow(training)
+365
+nrow(testing)
+235
 
 ?forecast
+plot(tstrain)
+    
+require(forecast)
+
+# Fit Model
+fit <- bats(tstrain )
+myforecast <- forecast(fit, h=235)
+plot(myforecast)
+
+
+actual <- testing$visitsTumblr[]
+hi95 <- myforecast$upper[,2]
+lo95 <- myforecast$lower[,2]
+
+require(data.table)
+dt1 <- data.table(lo95, hi95, actual)
+
+
 ```
 
+# Question 5
+```{r}
+set.seed(3523)
+library(AppliedPredictiveModeling)
+data(concrete)
+inTrain = createDataPartition(concrete$CompressiveStrength, p = 3/4)[[1]]
+training = concrete[ inTrain,]
+testing = concrete[-inTrain,]
 
+
+set.seed(325)
+require(e1071)
+
+?svm
+svm1 <- svm(CompressiveStrength~., data=training)
+
+pred1 <- predict(svm1, newdata=testing)
+
+#install.packages("Metrics")
+require(Metrics)
+rmse(actual=testing$CompressiveStrength, predicted=pred1)
+
+
+length(testing$CompressiveStrength)
+length(pred1)
+```
 
 
